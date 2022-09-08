@@ -11,6 +11,7 @@ import CustomerRepository from "./customer.repository";
 import ProductRepository from "./product.repository";
 import Order from "../../domain/entity/order";
 import OrderRepository from "./order.repository";
+import { v4 as uuid } from "uuid";
 
 describe("Order repository test", () => {
   let sequelize: Sequelize;
@@ -81,4 +82,100 @@ describe("Order repository test", () => {
       ],
     });
   });
+
+  it("should update an order", async ()=>{
+    const customerRepository = new CustomerRepository();
+    const customer = new Customer(uuid(), "Customer 1");
+    const address = new Address("Street 1", 1, "Zipcode 1", "City 1");
+    customer.changeAddress(address);
+    await customerRepository.create(customer);
+
+    const productRepository = new ProductRepository();
+    const product = new Product(uuid(), "Product 1", 10);
+    await productRepository.create(product);
+    const product2 = new Product(uuid(), "Product 2", 20);
+    await productRepository.create(product2);
+    const product3 = new Product(uuid(), "Product 3", 5);
+    await productRepository.create(product3);
+
+    const ordemItem1 = new OrderItem(uuid(), product.name, product.price, product.id, 2);
+    const ordemItem2 = new OrderItem(uuid(), product2.name, product2.price, product2.id, 1);
+    const order = new Order(uuid(), customer.id, [ordemItem1, ordemItem2].sort((a, b)=>sortId(a.id, b.id)));
+
+    const orderRepository = new OrderRepository();
+    await orderRepository.create(order);
+
+    const ordemItemU1 = new OrderItem(uuid(), product.name, product.price, product.id, 3);
+    const ordemItemU2 = new OrderItem(uuid(), product3.name, product3.price, product3.id, 1);
+    order.changeItems([ordemItemU1, ordemItemU2].sort((a, b)=>sortId(a.id, b.id)));
+    await orderRepository.update(order);
+
+    const orderResult = await orderRepository.find(order.id);
+    expect(order).toStrictEqual(orderResult);
+  });
+
+  it("should find an order", async ()=>{
+    const customerRepository = new CustomerRepository();
+    const customer = new Customer(uuid(), "Customer 1");
+    const address = new Address("Street 1", 1, "Zipcode 1", "City 1");
+    customer.changeAddress(address);
+    await customerRepository.create(customer);
+
+    const productRepository = new ProductRepository();
+    const product = new Product(uuid(), "Product 1", 10);
+    await productRepository.create(product);
+
+    const ordemItem = new OrderItem(uuid(), product.name, product.price, product.id, 2);
+    const order = new Order(uuid(), customer.id, [ordemItem]);
+
+    const orderRepository = new OrderRepository();
+    await orderRepository.create(order);
+
+    const orderResult = await orderRepository.find(order.id);
+    expect(order).toStrictEqual(orderResult);
+    
+  });
+
+  it("should throw an error when order is not found", async ()=>{
+    const orderRepository = new OrderRepository();
+    expect(async () => {
+      await orderRepository.find("aaaaaaaa");
+    }).rejects.toThrow("Order not found");
+  });
+
+  it("should find all orders", async ()=>{
+    const customerRepository = new CustomerRepository();
+    const customer = new Customer(uuid(), "Customer 1");
+    const address = new Address("Street 1", 1, "Zipcode 1", "City 1");
+    customer.changeAddress(address);
+    await customerRepository.create(customer);
+
+    const productRepository = new ProductRepository();
+    const product = new Product(uuid(), "Product 1", 10);
+    const product2 = new Product(uuid(), "Product 2", 5);
+    await productRepository.create(product);
+    await productRepository.create(product2);
+
+    const orderRepository = new OrderRepository();
+    const ordemItemA1 = new OrderItem(uuid(), product.name, product.price, product.id, 2);
+    const orderA = new Order(uuid(), customer.id, [ordemItemA1]);    
+    await orderRepository.create(orderA);
+
+    const ordemItemB1 = new OrderItem(uuid(), product.name, product.price, product.id, 3);
+    const ordemItemB2 = new OrderItem(uuid(), product2.name, product2.price, product2.id, 1);
+    const orderB = new Order(uuid(), customer.id, [ordemItemB1, ordemItemB2].sort((a, b)=>sortId(a.id, b.id)));
+    await orderRepository.create(orderB);
+
+    const orders = [orderA, orderB].sort((a, b)=>sortId(a.id, b.id));
+
+    const orderResult = await orderRepository.findAll();  
+    expect(orders).toStrictEqual(orderResult);
+  });
+
+  function sortId(x: string, y: string){
+    return x < y ? -1 : x > y ? 1 : 0;
+  }
+
 });
+
+

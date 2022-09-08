@@ -44,6 +44,23 @@ export default class Order {
   }
 
   total(): number {
-    return this._items.reduce((acc, item) => acc + item.price, 0);
+    return this._items.reduce((acc, item) => acc + item.total, 0);
   }
+
+  changeItems(items: OrderItem[]){
+    this._items = items;
+    this._total = this.total();
+    this.validate();
+  }
+  
+  // toString() {
+  //   const itens = this._items.map((item)=>(`${item.toString()}, \n`));
+  //   return `
+  //     "Order {
+  //       "_id:" "${this._id}",
+  //       "_customerId:" "${this._customerId}",
+  //       "_total: "${this._total}",
+  //       "Items:" "[${itens.toString()}]"
+  //     }`;
+  // }
 }

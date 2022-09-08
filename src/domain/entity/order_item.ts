@@ -36,6 +36,21 @@ export default class OrderItem {
   }
 
   get price(): number {
+    return this._price;
+  }
+
+  get total(): number {
     return this._price * this._quantity;
   }
+
+  // toString():string {
+  //   return `
+  //       OrderItem {
+  //         "_id:" "${this._id}",
+  //         "_name:" "${this._name}",
+  //         "_quantity:" "${this._quantity},
+  //         "_price:" "${this._price}",
+  //         "total: " "${this.total}"
+  //       }`;
+  // }
 }
