@@ -10,6 +10,11 @@ export default class EventDispatcher implements EventDispatcherInterface {
   }
 
   register(eventName: string, eventHandler: EventHandlerInterface): void {
+    const eventOfHandler = eventHandler.typeOfEvent.constructor.name;
+    if(eventName!==eventOfHandler){
+      throw Error("EventName must be the equal to Event of EventHandler");
+    }
+
     if (!this.eventHandlers[eventName]) {
       this.eventHandlers[eventName] = [];
     }
